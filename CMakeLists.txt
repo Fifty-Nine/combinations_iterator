@@ -16,6 +16,8 @@ include_directories(
     ${Boost_INCLUDE_DIRS} 
 )
 
+add_compile_options("-std=c++11")
+
 add_executable(tests
     pairs_iterator.hpp
     tests.cpp

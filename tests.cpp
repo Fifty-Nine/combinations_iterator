@@ -11,6 +11,7 @@
 #include <set>
 #include <vector>
 
+#include "combinations_iterator.hpp"
 #include "pairs_iterator.hpp"
 
 using namespace boost;
@@ -25,10 +26,10 @@ BOOST_GLOBAL_FIXTURE(test_init);
 
 BOOST_AUTO_TEST_SUITE(pairs_iterator_tests)
 
-struct Foo { int a; int b; };
 
 void concept_check()
 {
+    typedef std::tuple<int, int, int> Foo;
     typedef std::list<int>::iterator ListIt;
     typedef std::set<int>::iterator SetIt;
     typedef std::vector<int>::iterator VectorIt;
@@ -41,29 +42,23 @@ void concept_check()
     typedef pairs_iterator<SetIt, Foo> CFSetIt;
     typedef pairs_iterator<VectorIt, Foo> CFVectorIt;
 
-    BOOST_CONCEPT_ASSERT((BidirectionalTraversalConcept<CListIt>));
+    BOOST_CONCEPT_ASSERT((ForwardTraversalConcept<CListIt>));
     BOOST_CONCEPT_ASSERT((ReadableIteratorConcept<CListIt>));
-    BOOST_CONCEPT_ASSERT((SwappableIteratorConcept<CListIt>));
     
-    BOOST_CONCEPT_ASSERT((BidirectionalTraversalConcept<CSetIt>));
+    BOOST_CONCEPT_ASSERT((ForwardTraversalConcept<CSetIt>));
     BOOST_CONCEPT_ASSERT((ReadableIteratorConcept<CSetIt>));
-    BOOST_CONCEPT_ASSERT((SwappableIteratorConcept<CSetIt>));
     
-    BOOST_CONCEPT_ASSERT((BidirectionalTraversalConcept<CVectorIt>));
+    BOOST_CONCEPT_ASSERT((ForwardTraversalConcept<CVectorIt>));
     BOOST_CONCEPT_ASSERT((ReadableIteratorConcept<CVectorIt>));
-    BOOST_CONCEPT_ASSERT((SwappableIteratorConcept<CVectorIt>));
     
-    BOOST_CONCEPT_ASSERT((BidirectionalTraversalConcept<CFListIt>));
+    BOOST_CONCEPT_ASSERT((ForwardTraversalConcept<CFListIt>));
     BOOST_CONCEPT_ASSERT((ReadableIteratorConcept<CFListIt>));
-    BOOST_CONCEPT_ASSERT((SwappableIteratorConcept<CFListIt>));
     
-    BOOST_CONCEPT_ASSERT((BidirectionalTraversalConcept<CFSetIt>));
+    BOOST_CONCEPT_ASSERT((ForwardTraversalConcept<CFSetIt>));
     BOOST_CONCEPT_ASSERT((ReadableIteratorConcept<CFSetIt>));
-    BOOST_CONCEPT_ASSERT((SwappableIteratorConcept<CFSetIt>));
     
-    BOOST_CONCEPT_ASSERT((BidirectionalTraversalConcept<CFVectorIt>));
+    BOOST_CONCEPT_ASSERT((ForwardTraversalConcept<CFVectorIt>));
     BOOST_CONCEPT_ASSERT((ReadableIteratorConcept<CFVectorIt>));
-    BOOST_CONCEPT_ASSERT((SwappableIteratorConcept<CFVectorIt>));
 }
 
 BOOST_AUTO_TEST_CASE(Simple)
@@ -119,6 +114,55 @@ BOOST_AUTO_TEST_CASE(Subset)
             ++it;
         }
     }
+}
+
+BOOST_AUTO_TEST_CASE(Empty)
+{
+    std::vector<int> in;
+
+    typedef std::pair<int, int> ValueT;
+    typedef std::vector<ValueT> Container;
+    Container out(
+        make_pairs_iterator(in.begin(), in.end()),
+        make_pairs_iterator(in.end(), in.end())
+    );
+
+    BOOST_CHECK_EQUAL(out.size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(AlmostEmpty)
+{
+    std::vector<int> in(
+        make_counting_iterator(0),
+        make_counting_iterator(2)
+    );
+
+    typedef std::array<int, 4> ValueT;
+    typedef std::vector<ValueT> Container;
+
+    Container out(
+        make_combinations_iterator<4>(in.begin(), in.end()),
+        make_combinations_iterator<4>(in.end(), in.end())
+    );
+
+    BOOST_CHECK_EQUAL(out.size(), 0);
+}
+
+BOOST_AUTO_TEST_CASE(Triples)
+{
+    std::vector<int> in(
+        make_counting_iterator(1),
+        make_counting_iterator(6)
+    );
+
+    typedef std::array<int, 3> ValueT;
+    typedef std::vector<ValueT> Container;
+    Container out(
+        make_combinations_iterator<3>(in.begin(), in.end()),
+        make_combinations_iterator<3>(in.end(), in.end())
+    );
+
+    BOOST_CHECK_EQUAL(out.size(), 10);
 }
 
 BOOST_AUTO_TEST_SUITE_END()
