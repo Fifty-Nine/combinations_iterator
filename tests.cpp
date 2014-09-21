@@ -26,10 +26,13 @@ BOOST_GLOBAL_FIXTURE(test_init);
 
 BOOST_AUTO_TEST_SUITE(pairs_iterator_tests)
 
+struct Foo 
+{
+    Foo(int a, int b) { }
+};
 
 void concept_check()
 {
-    typedef std::tuple<int, int, int> Foo;
     typedef std::list<int>::iterator ListIt;
     typedef std::set<int>::iterator SetIt;
     typedef std::vector<int>::iterator VectorIt;
@@ -59,6 +62,9 @@ void concept_check()
     
     BOOST_CONCEPT_ASSERT((ForwardTraversalConcept<CFVectorIt>));
     BOOST_CONCEPT_ASSERT((ReadableIteratorConcept<CFVectorIt>));
+
+    pairs_iterator<ListIt, Foo> p;
+    *p;
 }
 
 BOOST_AUTO_TEST_CASE(Simple)

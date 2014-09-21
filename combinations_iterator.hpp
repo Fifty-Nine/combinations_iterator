@@ -65,6 +65,42 @@ void init_value(ValueT& v, const std::array<It, Order>& a)
     return init_value_helper<0, Order>::set(v, a);
 }
 
+template<class ValueT, size_t N>
+struct construct_helper
+{
+    template<class TupleLike, class... T>
+    static ValueT construct(const TupleLike& t, T&&... args)
+    {
+        return construct_helper<ValueT, N-1>::construct(
+            t, *std::get<N-1>(t), std::forward<T>(args)...        
+        );
+    }
+
+    template<class TupleLike>
+    static ValueT construct(const TupleLike& t)
+    {
+        return construct_helper<ValueT, N-1>::construct(
+            t, *std::get<N-1>(t)
+        );
+    }
+};
+
+template<class ValueT>
+struct construct_helper<ValueT, 0>
+{
+    template<class TupleLike, class... T>
+    static ValueT construct(const TupleLike& t, T&&... args)
+    {
+        return ValueT { std::forward<T>(args)... };
+    }
+};
+
+template<class ValueT, class T, size_t N>
+ValueT construct(const std::array<T, N>& t)
+{
+    return construct_helper<ValueT, N>::construct(t);
+}
+
 } /* namespace detail */
 
 template<
@@ -159,9 +195,7 @@ private:
 
     ValueT dereference() const 
     {
-        ValueT result;
-        detail::init_value(result, it_);
-        return result;
+        return detail::construct<ValueT>(it_);
     }
 
     std::array<Iterator, Order> it_;
